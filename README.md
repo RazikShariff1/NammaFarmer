@@ -24,7 +24,7 @@ NammaFarmer aims to revolutionize agricultural support, connecting farmers with 
    ```bash
    npm start
    ```
-
+   
 🤝 Contributing
 1. Fork the repo.
 2. Create a branch: `git checkout -b feature/AmazingFeature`.

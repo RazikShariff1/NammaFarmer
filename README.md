@@ -33,4 +33,5 @@ NammaFarmer aims to revolutionize agricultural support, connecting farmers with 
 5. Open a pull request.
 
 📧 Contact
-Email: [razikshariff7094@example.com]
+Email: [razikshariff7094@gmail.com]
+Email: [kayisamarth10@gmail.com]

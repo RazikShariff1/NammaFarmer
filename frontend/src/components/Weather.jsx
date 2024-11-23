@@ -15,10 +15,18 @@ const Weather = () => {
     setError(null);
 
     try {
-      const response = await fetch(`http://127.0.0.1:5000/weather?city=${city}`);
+      const response = await fetch(`http://localhost:5000/weather?city=${city}`);
       if (response.ok) {
         const data = await response.json();
-        setWeatherData(data);
+
+        // Assuming the data has the following structure:
+        setWeatherData({
+          city: data.city,
+          description: data.description,
+          temperature: data.temperature,
+          humidity: data.humidity,
+          wind_speed: data.wind_speed,
+        });
       } else {
         setError('Failed to fetch weather data. Please try again.');
       }

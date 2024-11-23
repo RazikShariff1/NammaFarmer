@@ -1,53 +1,117 @@
-import React, { useState } from 'react';
-import './AuthPage.css';
-import loginImage from '../assets/logsig.jpg'; // Add your own image path
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import "./AuthPage.css";
+import loginImage from "../assets/logsig.jpg";
 
-export default function AuthPage() {
+export default function AuthPage({ onAuth }) {
   const [isLogin, setIsLogin] = useState(true);
+  const [formData, setFormData] = useState({ name: "", email: "", password: "" });
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   const toggleForm = () => {
     setIsLogin(!isLogin);
+    setError("");
+    setFormData({ name: "", email: "", password: "" });
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevState) => ({ ...prevState, [name]: value }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+
+    const endpoint = isLogin ? "/login" : "/signup";
+    const url = `http://127.0.0.1:5000/users${endpoint}`;
+
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        // Notify parent component
+        onAuth();
+        // Redirect to dashboard
+        navigate("/dashboard");
+      } else {
+        setError(result.error || "An error occurred. Please try again.");
+      }
+    } catch (err) {
+      setError("Unable to connect to the server. Please try again.");
+    }
   };
 
   return (
     <div className="auth-page">
       <div className="auth-content">
-        {/* Left Section */}
         <div className="auth-form">
-          <h2>{isLogin ? 'Welcome Back!' : 'Join NammaFarmer'}</h2>
+          <h2 className="auth-title">{isLogin ? "Welcome Back!" : "Join NammaFarmer"}</h2>
           <p className="auth-subtitle">
             {isLogin
-              ? 'Log in to access your personalized dashboard.'
-              : 'Sign up to connect with the farming community.'}
+              ? "Log in to access your personalized dashboard."
+              : "Sign up to connect with the farming community."}
           </p>
-          <form>
+
+          {error && <p className="error">{error}</p>}
+
+          <form onSubmit={handleSubmit}>
             {!isLogin && (
               <div className="input-group">
-                <input type="text" id="name" required />
-                <label htmlFor="name">Full Name</label>
+                <input
+                  type="text"
+                  id="name"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  required
+                />
+                <label htmlFor="name" className="floating-label">Full Name</label>
               </div>
             )}
             <div className="input-group">
-              <input type="email" id="email" required />
-              <label htmlFor="email">Email Address</label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                value={formData.email}
+                onChange={handleInputChange}
+                required
+              />
+              <label htmlFor="email" className="floating-label">Email Address</label>
             </div>
             <div className="input-group">
-              <input type="password" id="password" required />
-              <label htmlFor="password">{isLogin ? 'Password' : 'Create Password'}</label>
+              <input
+                type="password"
+                id="password"
+                name="password"
+                value={formData.password}
+                onChange={handleInputChange}
+                required
+              />
+              <label htmlFor="password" className="floating-label">
+                {isLogin ? "Password" : "Create Password"}
+              </label>
             </div>
             <button type="submit" className="cta-btn">
-              {isLogin ? 'Log In' : 'Sign Up'}
+              {isLogin ? "Log In" : "Sign Up"}
             </button>
           </form>
           <p className="toggle-text">
-            {isLogin ? "Don't have an account? " : 'Already have an account? '}
+            {isLogin ? "Don't have an account? " : "Already have an account? "}
             <button onClick={toggleForm} className="toggle-link">
-              {isLogin ? 'Sign Up' : 'Log In'}
+              {isLogin ? "Sign Up" : "Log In"}
             </button>
           </p>
         </div>
 
-        {/* Right Section */}
         <div className="auth-image">
           <img src={loginImage} alt="Login illustration" />
         </div>

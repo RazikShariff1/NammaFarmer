@@ -1,105 +1,161 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import './Dashboard.css';
+import React from "react";
+import { Routes, Route, Link, Navigate, useLocation } from "react-router-dom";
+import Profile from "./Profile";
+import Analytics from "./Analytics";
+import Settings from "./Settings";
+import Status from "./Status";
+import MarketInsight from "./MarketInsight";
+import SellProduce from "./SellProduce";
+import OrderTracking from "./OrderTracking";
+import SupportResources from "./SupportResources";
+import NearbyMarkets from "./NearbyMarkets";
+import Notifications from "./Notifications";
+import {
+  FaUser,
+  FaChartBar,
+  FaCog,
+  FaSignOutAlt,
+  FaBell,
+  FaShoppingCart,
+  FaTruck,
+  FaHandshake,
+  FaMapMarkerAlt,
+  FaChartPie,
+} from "react-icons/fa";
 
-const Dashboard = ({ onLogout }) => {
+export default function Dashboard({ onLogout }) {
+  const location = useLocation();
+
   return (
-    <div className="dashboard min-h-screen bg-gray-100 p-8">
-      <div className="container mx-auto">
-        {/* Header */}
-        <header className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-800">Welcome to NammaFarmer Dashboard</h1>
+    <div className="flex h-screen bg-gradient-to-br from-gray-100 to-gray-300 text-gray-900 font-sans">
+      {/* Sidebar */}
+      <div className="fixed top-0 left-0 h-full w-64 bg-white shadow-lg border-r border-gray-200 flex flex-col justify-between overflow-y-auto">
+        {/* Sidebar Header */}
+        <div className="p-10">
+          
+        </div>
+
+        {/* Navigation Section */}
+        <nav className="flex-1 overflow-y-auto">
+          <ul className="space-y-2 px-4">
+            <SidebarLink
+              to="/dashboard/profile"
+              icon={<FaUser />}
+              label="Profile"
+              isActive={location.pathname === "/dashboard/profile"}
+            />
+            <SidebarLink
+              to="/dashboard/analytics"
+              icon={<FaChartBar />}
+              label="Analytics"
+              isActive={location.pathname === "/dashboard/analytics"}
+            />
+            <SidebarLink
+              to="/dashboard/status"
+              icon={<FaChartPie />}
+              label="Dashboard"
+              isActive={location.pathname === "/dashboard/status"}
+            />
+            <SidebarLink
+              to="/dashboard/market-insight"
+              icon={<FaChartPie />}
+              label="Market Insight"
+              isActive={location.pathname === "/dashboard/market-insight"}
+            />
+            <SidebarLink
+              to="/dashboard/sell-produce"
+              icon={<FaShoppingCart />}
+              label="Sell Produce"
+              isActive={location.pathname === "/dashboard/sell-produce"}
+            />
+            <SidebarLink
+              to="/dashboard/order-tracking"
+              icon={<FaTruck />}
+              label="Order Tracking"
+              isActive={location.pathname === "/dashboard/order-tracking"}
+            />
+            <SidebarLink
+              to="/dashboard/support-resources"
+              icon={<FaHandshake />}
+              label="Support & Resources"
+              isActive={location.pathname === "/dashboard/support-resources"}
+            />
+            <SidebarLink
+              to="/dashboard/nearby-markets"
+              icon={<FaMapMarkerAlt />}
+              label="Nearby Buyers/Markets"
+              isActive={location.pathname === "/dashboard/nearby-markets"}
+            />
+            <SidebarLink
+              to="/dashboard/notifications"
+              icon={<FaBell />}
+              label="Notifications"
+              isActive={location.pathname === "/dashboard/notifications"}
+            />
+          </ul>
+        </nav>
+
+        {/* Bottom Section */}
+        <div className="p-6">
+          <nav>
+            <ul>
+              <SidebarLink
+                to="/dashboard/settings"
+                icon={<FaCog />}
+                label="Settings"
+                isActive={location.pathname === "/dashboard/settings"}
+              />
+            </ul>
+          </nav>
           <button
             onClick={onLogout}
-            className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition duration-300"
+            className="w-full mt-4 py-2 px-4 bg-red-500 text-white text-sm rounded hover:bg-red-600 transition-colors flex items-center justify-center space-x-2"
           >
-            Logout
+            <FaSignOutAlt />
+            <span>Logout</span>
           </button>
-        </header>
+        </div>
+      </div>
 
-        {/* Stats Grid */}
-        <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
-          {/* Weather Card */}
-          <div className="bg-white shadow-md rounded-lg p-6">
-            <h2 className="text-xl font-semibold text-gray-700">Today's Weather</h2>
-            <div className="mt-4 text-gray-600">
-              <p className="text-lg">Sunny</p>
-              <p className="text-sm">25°C / 77°F</p>
-              <p className="text-sm">Humidity: 60%</p>
-            </div>
-          </div>
-
-          {/* Crop Stats Card */}
-          <div className="bg-white shadow-md rounded-lg p-6">
-            <h2 className="text-xl font-semibold text-gray-700">Farm Statistics</h2>
-            <div className="mt-4 text-gray-600">
-              <p className="text-lg">Total Yield: 500kg</p>
-              <p className="text-sm">Average Crop Quality: 85%</p>
-              <p className="text-sm">Market Value: ₹50,000</p>
-            </div>
-          </div>
-
-          {/* Community Card */}
-          <div className="bg-white shadow-md rounded-lg p-6">
-            <h2 className="text-xl font-semibold text-gray-700">Community Updates</h2>
-            <div className="mt-4 text-gray-600">
-              <p className="text-sm">Join the latest discussions with other farmers. Share tips and advice!</p>
-              <Link to="/community" className="text-blue-500 hover:underline">Go to Community</Link>
-            </div>
-          </div>
-        </section>
-
-        {/* Schedule and Reminders */}
-        <section className="bg-white shadow-md rounded-lg p-6 mb-8">
-          <h2 className="text-xl font-semibold text-gray-700">Upcoming Tasks</h2>
-          <div className="mt-4">
-            <div className="flex justify-between items-center mb-4">
-              <p className="text-lg text-gray-600">Planting Season: Rice</p>
-              <p className="text-sm text-gray-400">In 3 days</p>
-            </div>
-            <div className="flex justify-between items-center mb-4">
-              <p className="text-lg text-gray-600">Harvesting Season: Wheat</p>
-              <p className="text-sm text-gray-400">In 7 days</p>
-            </div>
-            <div className="flex justify-between items-center mb-4">
-              <p className="text-lg text-gray-600">Fertilizer Application</p>
-              <p className="text-sm text-gray-400">In 14 days</p>
-            </div>
-          </div>
-        </section>
-
-        {/* Additional Resources */}
-        <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {/* Crop Management Guide */}
-          <div className="bg-white shadow-md rounded-lg p-6">
-            <h2 className="text-xl font-semibold text-gray-700">Crop Management Guide</h2>
-            <p className="mt-4 text-sm text-gray-600">
-              Learn the best practices for managing your crops and ensuring optimal growth.
-            </p>
-            <Link to="/guide" className="text-blue-500 hover:underline mt-4 block">Read the Guide</Link>
-          </div>
-
-          {/* Market Insights */}
-          <div className="bg-white shadow-md rounded-lg p-6">
-            <h2 className="text-xl font-semibold text-gray-700">Market Insights</h2>
-            <p className="mt-4 text-sm text-gray-600">
-              Stay informed about the latest market trends and how to sell your produce at the best price.
-            </p>
-            <Link to="/market" className="text-blue-500 hover:underline mt-4 block">Explore Insights</Link>
-          </div>
-
-          {/* Support Contact */}
-          <div className="bg-white shadow-md rounded-lg p-6">
-            <h2 className="text-xl font-semibold text-gray-700">Need Help?</h2>
-            <p className="mt-4 text-sm text-gray-600">
-              If you have any questions or need support, feel free to reach out to us.
-            </p>
-            <Link to="/support" className="text-blue-500 hover:underline mt-4 block">Contact Support</Link>
-          </div>
-        </section>
+      {/* Main Content */}
+      <div className="flex-1 ml-64 p-6 overflow-y-auto">
+        <div className="bg-white shadow-sm rounded-lg p-6 border border-gray-200 min-h-full">
+          <Routes>
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/analytics" element={<Analytics />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="/status" element={<Status />} />
+            <Route path="/market-insight" element={<MarketInsight />} />
+            <Route path="/sell-produce" element={<SellProduce />} />
+            <Route path="/order-tracking" element={<OrderTracking />} />
+            <Route path="/support-resources" element={<SupportResources />} />
+            <Route path="/nearby-markets" element={<NearbyMarkets />} />
+            <Route path="/notifications" element={<Notifications />} />
+            <Route
+              path="*"
+              element={<Navigate to="/dashboard/profile" replace />}
+            />
+          </Routes>
+        </div>
       </div>
     </div>
   );
-};
+}
 
-export default Dashboard;
+function SidebarLink({ to, icon, label, isActive }) {
+  return (
+    <li>
+      <Link
+        to={to}
+        className={`flex items-center space-x-3 px-4 py-2 rounded text-sm font-medium ${
+          isActive
+            ? "bg-gray-100 text-gray-800 font-semibold"
+            : "text-gray-600 hover:bg-gray-50 hover:text-gray-800"
+        }`}
+      >
+        <div className="text-lg">{icon}</div>
+        <span>{label}</span>
+      </Link>
+    </li>
+  );
+}

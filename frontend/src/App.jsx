@@ -17,6 +17,7 @@ function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
+    // Load preferences and auth state from localStorage
     const darkModePreference = localStorage.getItem("darkMode") === "true";
     setIsDarkMode(darkModePreference);
     document.body.classList.toggle("dark-theme", darkModePreference);
@@ -66,9 +67,13 @@ function App() {
               }
             />
             <Route
-              path="/dashboard"
+              path="/dashboard/*"
               element={
-                isAuthenticated ? <Dashboard onLogout={handleLogout} /> : <Navigate to="/account" replace />
+                isAuthenticated ? (
+                  <Dashboard onLogout={handleLogout} />
+                ) : (
+                  <Navigate to="/account" replace />
+                )
               }
             />
           </Routes>

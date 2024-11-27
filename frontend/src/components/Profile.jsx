@@ -8,15 +8,15 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, T
 
 export default function Profile() {
   return (
-    <div className="max-w-screen-xl mx-auto p-10 space-y-10 bg-gray-50" style={{width:"73vw"}}>
+    <div className="max-w-screen-xl mx-auto p-8 space-y-8 bg-gray-50">
       {/* Profile Overview Section */}
-      <div className="bg-gradient-to-br from-teal-600 to-green-800 text-white rounded-xl p-8 flex flex-col lg:flex-row items-center shadow-2xl gap-8">
+      <div className="bg-gradient-to-br from-teal-600 to-green-800 text-white rounded-xl p-6 flex flex-col lg:flex-row items-center shadow-2xl gap-6">
         {/* Profile Picture */}
         <div className="relative">
           <img
             src="https://via.placeholder.com/150"
             alt="Profile"
-            className="w-40 h-40 rounded-full border-4 border-white shadow-lg"
+            className="w-32 h-32 rounded-full border-4 border-white shadow-lg"
           />
           <button className="absolute bottom-2 right-2 bg-white text-teal-600 rounded-full p-2 shadow-md hover:bg-gray-100 transition">
             <FaEdit />
@@ -25,20 +25,20 @@ export default function Profile() {
 
         {/* Personal Details */}
         <div className="flex-1 text-center lg:text-left">
-          <h1 className="text-5xl font-bold">Razik Shariff</h1>
-          <p className="text-lg text-teal-200 mt-2">Shariff@example.com</p>
-          <p className="flex items-center justify-center lg:justify-start gap-2 mt-4">
+          <h1 className="text-3xl font-bold">Razik Shariff</h1>
+          <p className="text-base text-teal-200 mt-1">Shariff@example.com</p>
+          <p className="flex items-center justify-center lg:justify-start gap-2 text-sm mt-3">
             <FaMapMarkerAlt />
             <span>Bangalore, India</span>
           </p>
-          <p className="mt-2">
+          <p className="text-sm mt-1">
             <span className="font-medium">Member Since:</span> March 2022
           </p>
         </div>
       </div>
 
       {/* Insights Section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {/* Textual Insights */}
         <InsightCard
           title="Monthly Revenue"
@@ -73,8 +73,8 @@ export default function Profile() {
                 label: "Orders",
                 data: [8, 9, 12, 10],
                 fill: true,
-                backgroundColor: "rgba(255, 204, 0, 0.2)",
-                borderColor: "yellow",
+                backgroundColor: "#51A99C",
+                borderColor: "#C8F69C",
                 borderWidth: 2,
               },
             ],
@@ -99,9 +99,9 @@ export default function Profile() {
       </div>
 
       {/* Recent Activity Section */}
-      <div className="bg-white rounded-xl shadow-lg p-8">
-        <h2 className="text-3xl font-bold mb-6 text-gray-800">Recent Activity</h2>
-        <ul className="space-y-6">
+      <div className="bg-white rounded-xl shadow-lg p-6">
+        <h2 className="text-2xl font-bold mb-4 text-gray-800">Recent Activity</h2>
+        <ul className="space-y-4">
           <RecentActivityItem
             activity="Order #1234 delivered"
             timestamp="2 days ago"
@@ -129,27 +129,27 @@ function InsightCard({ title, value, description, progress, color, chartData }) 
   const textColor = `text-${color}-600`;
 
   return (
-    <div className="bg-white rounded-xl shadow-md p-6 border border-gray-200">
-      <h3 className={`text-xl font-semibold ${textColor}`}>{title}</h3>
-      <p className="text-gray-600 mt-2">{description}</p>
-      <h4 className={`text-4xl font-bold mt-4 ${textColor}`}>{value}</h4>
+    <div className="bg-white rounded-xl shadow-md p-5 border border-gray-200">
+      <h3 className={`text-base font-semibold ${textColor}`}>{title}</h3>
+      <p className="text-sm text-gray-600 mt-1">{description}</p>
+      <h4 className={`text-3xl font-bold mt-3 ${textColor}`}>{value}</h4>
 
       {/* If there's a progress bar */}
       {progress && (
-        <div className="mt-4">
+        <div className="mt-3">
           <div className="h-2 bg-gray-200 rounded-full">
             <div
               className={`h-full ${progressBarColor} rounded-full`}
               style={{ width: `${progress}%` }}
             ></div>
           </div>
-          <p className="text-sm text-gray-500 mt-1">{progress}% completed</p>
+          <p className="text-xs text-gray-500 mt-1">{progress}% completed</p>
         </div>
       )}
 
       {/* Chart Section for Graphical Insights */}
       {chartData && (
-        <div className="mt-4 h-48">
+        <div className="mt-4 h-36">
           <Line data={chartData} options={{ responsive: true, maintainAspectRatio: false }} />
         </div>
       )}
@@ -160,8 +160,8 @@ function InsightCard({ title, value, description, progress, color, chartData }) 
 function RecentActivityItem({ activity, timestamp }) {
   return (
     <li className="flex justify-between items-center">
-      <p className="text-gray-800 font-medium">{activity}</p>
-      <span className="text-gray-500 text-sm">{timestamp}</span>
+      <p className="text-gray-800 text-sm font-medium">{activity}</p>
+      <span className="text-gray-500 text-xs">{timestamp}</span>
     </li>
   );
 }

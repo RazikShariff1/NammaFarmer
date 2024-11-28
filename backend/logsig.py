@@ -1,20 +1,14 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import psycopg2
+import os
 
 # Initialize Flask App
 app = Flask(__name__)
 CORS(app)  # Enable Cross-Origin Resource Sharing
 
 # Database connection string
-CONNECTION_STRING = (
-    "user=postgres.myjpgltrdmjczavamwan "
-    "password=nammaFarmer_123 "
-    "host=aws-0-ap-southeast-1.pooler.supabase.com "
-    "port=6543 "
-    "dbname=postgres"
-)
-
+CONNECTION_STRING = os.getenv("DATABASE_URL")
 
 # Connect to the Supabase database
 def get_db_connection():

@@ -1,18 +1,58 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import { FaEdit, FaTrashAlt, FaSave, FaUpload } from "react-icons/fa";
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from "chart.js";
 import { Bar } from "react-chartjs-2";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
+const API_URL = "http://localhost:5000/sellproduce"; // Replace with your Flask backend URL
+
 export default function SellProduce() {
-  const [listings, setListings] = useState([
-    { id: 1, name: "Organic Tomatoes", category: "Vegetables", price: 2.5, quantity: 20, sales: 200, profit: 150, description: "Fresh organic tomatoes", status: "Available", image: "" },
-    { id: 2, name: "Fresh Spinach", category: "Vegetables", price: 1.2, quantity: 50, sales: 300, profit: 220, description: "Organic spinach leaves", status: "Available", image: "" },
-  ]);
+  const [listings, setListings] = useState([]);
   const [editingId, setEditingId] = useState(null);
-  const [formData, setFormData] = useState({ name: "", category: "", price: "", quantity: "", description: "", status: "Available", image: "" });
+  const [formData, setFormData] = useState({
+    name: "",
+    category: "",
+    price: "",
+    quantity: "",
+    description: "",
+    status: "Available",
+    image: "",
+  });
   const [imagePreview, setImagePreview] = useState(null);
+
+  // Fetch listings on load
+  useEffect(() => {
+    fetchListings();
+  }, []);
+
+  const fetchListings = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/listings`);
+      setListings(response.data);
+    } catch (error) {
+      console.error("Error fetching listings:", error);
+    }
+  };
+
+  const handleAdd = async (e) => {
+    e.preventDefault();
+    try {
+      const newListing = {
+        ...formData,
+        price: parseFloat(formData.price),
+        quantity: parseInt(formData.quantity, 10),
+        image: imagePreview,
+      };
+      const response = await axios.post(`${API_URL}/listings`, newListing);
+      setListings([...listings, response.data]);
+      setFormData({ name: "", category: "", price: "", quantity: "", description: "", status: "Available", image: "" });
+      setImagePreview(null);
+    } catch (error) {
+      console.error("Error adding listing:", error);
+    }
+  };
 
   const handleEdit = (item) => {
     setEditingId(item.id);
@@ -20,16 +60,28 @@ export default function SellProduce() {
     setImagePreview(item.image);
   };
 
-  const handleSave = (id) => {
-    setListings((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, ...formData, image: imagePreview || item.image } : item))
-    );
-    setEditingId(null);
-    setImagePreview(null);
+  const handleSave = async (id) => {
+    try {
+      const updatedListing = {
+        ...formData,
+        image: imagePreview,
+      };
+      await axios.put(`${API_URL}/listings/${id}`, updatedListing);
+      setListings((prev) => prev.map((item) => (item.id === id ? { ...item, ...updatedListing } : item)));
+      setEditingId(null);
+      setImagePreview(null);
+    } catch (error) {
+      console.error("Error updating listing:", error);
+    }
   };
 
-  const handleDelete = (id) => {
-    setListings((prev) => prev.filter((item) => item.id !== id));
+  const handleDelete = async (id) => {
+    try {
+      await axios.delete(`${API_URL}/listings/${id}`);
+      setListings((prev) => prev.filter((item) => item.id !== id));
+    } catch (error) {
+      console.error("Error deleting listing:", error);
+    }
   };
 
   const handleInputChange = (e) => {
@@ -46,36 +98,17 @@ export default function SellProduce() {
     }
   };
 
-  const handleAdd = (e) => {
-    e.preventDefault();
-    const newItem = {
-      id: listings.length + 1,
-      name: formData.name,
-      category: formData.category,
-      price: parseFloat(formData.price),
-      quantity: parseInt(formData.quantity, 10),
-      sales: 0,
-      profit: 0,
-      description: formData.description,
-      status: formData.status,
-      image: imagePreview,
-    };
-    setListings((prev) => [...prev, newItem]);
-    setFormData({ name: "", category: "", price: "", quantity: "", description: "", status: "Available", image: "" });
-    setImagePreview(null);
-  };
-
   const chartData = {
     labels: listings.map((item) => item.name),
     datasets: [
       {
         label: "Sales",
-        data: listings.map((item) => item.sales),
+        data: listings.map((item) => item.sales || 0),
         backgroundColor: "rgba(75, 192, 192, 0.5)",
       },
       {
         label: "Profit",
-        data: listings.map((item) => item.profit),
+        data: listings.map((item) => item.profit || 0),
         backgroundColor: "rgba(153, 102, 255, 0.5)",
       },
     ],
@@ -90,7 +123,7 @@ export default function SellProduce() {
   };
 
   return (
-    <div className="max-w-screen-xl mx-auto p-8 space-y-8 bg-gray-50" style={{width:"73vw"}}>
+    <div className="max-w-screen-xl mx-auto p-8 space-y-8 bg-gray-50" style={{ width: "73vw" }}>
       {/* Product Upload Section */}
       <div className="bg-white rounded-xl shadow-lg p-6">
         <h2 className="text-2xl font-bold text-gray-800 mb-4">List Your Produce</h2>
@@ -108,10 +141,11 @@ export default function SellProduce() {
               onChange={handleInputChange}
               placeholder="Enter product name"
               className="w-full mt-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:ring-teal-300"
+              required
             />
           </div>
 
-          {/* Category Selector */}
+          {/* Category */}
           <div>
             <label htmlFor="category" className="text-sm font-medium text-gray-700">
               Category
@@ -122,44 +156,48 @@ export default function SellProduce() {
               value={formData.category}
               onChange={handleInputChange}
               className="w-full mt-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:ring-teal-300"
+              required
             >
-              <option>Fruits</option>
-              <option>Vegetables</option>
-              <option>Dairy</option>
-              <option>Grains</option>
+              <option value="">Select a category</option>
+              <option value="Fruits">Fruits</option>
+              <option value="Vegetables">Vegetables</option>
+              <option value="Dairy">Dairy</option>
+              <option value="Grains">Grains</option>
             </select>
           </div>
 
-          {/* Price & Quantity */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="price" className="text-sm font-medium text-gray-700">
-                Price (per unit)
-              </label>
-              <input
-                type="number"
-                id="price"
-                name="price"
-                value={formData.price}
-                onChange={handleInputChange}
-                placeholder="Enter price"
-                className="w-full mt-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:ring-teal-300"
-              />
-            </div>
-            <div>
-              <label htmlFor="quantity" className="text-sm font-medium text-gray-700">
-                Quantity
-              </label>
-              <input
-                type="number"
-                id="quantity"
-                name="quantity"
-                value={formData.quantity}
-                onChange={handleInputChange}
-                placeholder="Enter quantity"
-                className="w-full mt-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:ring-teal-300"
-              />
-            </div>
+          {/* Price */}
+          <div>
+            <label htmlFor="price" className="text-sm font-medium text-gray-700">
+              Price (per unit)
+            </label>
+            <input
+              type="number"
+              id="price"
+              name="price"
+              value={formData.price}
+              onChange={handleInputChange}
+              placeholder="Enter price"
+              className="w-full mt-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:ring-teal-300"
+              required
+            />
+          </div>
+
+          {/* Quantity */}
+          <div>
+            <label htmlFor="quantity" className="text-sm font-medium text-gray-700">
+              Quantity
+            </label>
+            <input
+              type="number"
+              id="quantity"
+              name="quantity"
+              value={formData.quantity}
+              onChange={handleInputChange}
+              placeholder="Enter quantity"
+              className="w-full mt-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:ring-teal-300"
+              required
+            />
           </div>
 
           {/* Description */}
@@ -174,6 +212,7 @@ export default function SellProduce() {
               onChange={handleInputChange}
               placeholder="Enter a brief description of the product"
               className="w-full mt-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:ring-teal-300"
+              required
             ></textarea>
           </div>
 
@@ -188,9 +227,10 @@ export default function SellProduce() {
               value={formData.status}
               onChange={handleInputChange}
               className="w-full mt-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:ring-teal-300"
+              required
             >
-              <option>Available</option>
-              <option>Out of Stock</option>
+              <option value="Available">Available</option>
+              <option value="Out of Stock">Out of Stock</option>
             </select>
           </div>
 
@@ -235,14 +275,17 @@ export default function SellProduce() {
             List Product
           </button>
         </form>
+
       </div>
 
+      {/* Active Listings Section */}
       {/* Active Listings Section */}
       <div className="bg-white rounded-xl shadow-lg p-6">
         <h2 className="text-2xl font-bold text-gray-800 mb-4">Active Listings</h2>
         <div className="space-y-4">
           {listings.map((item) => (
             <div key={item.id} className="flex items-center justify-between space-x-4 border-b pb-4">
+              {/* Product Info Section */}
               <div className="flex space-x-4">
                 <img
                   src={item.image || "https://via.placeholder.com/50"}
@@ -255,6 +298,8 @@ export default function SellProduce() {
                   <p className="text-xs text-gray-500">{item.category} | {item.status}</p>
                 </div>
               </div>
+
+              {/* Action Buttons Section */}
               <div className="space-x-4">
                 {editingId === item.id ? (
                   <button
@@ -285,8 +330,9 @@ export default function SellProduce() {
         </div>
       </div>
 
+
       {/* Chart Section */}
-      <div className="bg-white rounded-xl shadow-lg p-6">
+      <div>
         <Bar data={chartData} options={chartOptions} />
       </div>
     </div>

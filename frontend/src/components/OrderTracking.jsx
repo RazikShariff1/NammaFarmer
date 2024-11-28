@@ -176,7 +176,7 @@ export default function OrderTracking() {
         {/* Google Map */}
         <div className="bg-white rounded-xl shadow-lg p-6">
           <h2 className="text-xl font-semibold text-gray-800 mb-4">Route for {selectedOrder.id}</h2>
-          <LoadScript googleMapsApiKey="AIzaSyA5_p-B5wWSrLOqw3LM8w_R6Fm9yczkmgE">
+          <LoadScript googleMapsApiKey="api-key">
             <GoogleMap mapContainerStyle={containerStyle} center={selectedOrder.origin} zoom={6}>
               {directionsResponse && <DirectionsRenderer directions={directionsResponse} />}
             </GoogleMap>

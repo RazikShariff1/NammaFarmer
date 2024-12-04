@@ -7,6 +7,9 @@ export default function AuthPage({ onAuth }) {
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({ name: "", email: "", password: "" });
   const [error, setError] = useState("");
+  const [toastMessage, setToastMessage] = useState("");
+  const [showToast, setShowToast] = useState(false);
+
   const navigate = useNavigate();
 
   const toggleForm = () => {
@@ -37,6 +40,13 @@ export default function AuthPage({ onAuth }) {
       const result = await response.json();
 
       if (response.ok) {
+        // Display success toast
+        setToastMessage(isLogin ? "Login successful!" : "Signup successful!");
+        setShowToast(true);
+
+        // Hide toast after 3 seconds
+        setTimeout(() => setShowToast(false), 3000);
+
         // Notify parent component
         onAuth();
         // Redirect to dashboard
@@ -51,6 +61,28 @@ export default function AuthPage({ onAuth }) {
 
   return (
     <div className="auth-page">
+      {/* Toast Notification */}
+      {showToast && (
+        <div
+          className="toast align-items-center position-fixed top-0 end-0 m-3 bg-success text-white"
+          role="alert"
+          aria-live="assertive"
+          aria-atomic="true"
+          style={{ zIndex: 1055 }}
+        >
+          <div className="d-flex">
+            <div className="toast-body">{toastMessage}</div>
+            <button
+              type="button"
+              className="btn-close btn-close-white me-2 m-auto"
+              data-bs-dismiss="toast"
+              aria-label="Close"
+              onClick={() => setShowToast(false)}
+            ></button>
+          </div>
+        </div>
+      )}
+
       <div className="auth-content">
         <div className="auth-form">
           <h2 className="auth-title">{isLogin ? "Welcome Back!" : "Join NammaFarmer"}</h2>

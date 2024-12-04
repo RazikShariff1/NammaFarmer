@@ -62,24 +62,24 @@ export default function Header({ toggleDarkMode, isDarkMode }) {
             Home
           </NavLink>
           <NavLink
-            to="/features"
+            to="/Market"
             className={({ isActive }) =>
               isActive
                 ? 'text-white font-bold underline'
                 : 'text-white hover:text-gray-200'
             }
           >
-            Features
+            Market
           </NavLink>
           <NavLink
-            to="/how-it-works"
+            to="/AI"
             className={({ isActive }) =>
               isActive
                 ? 'text-white font-bold underline'
                 : 'text-white hover:text-gray-200'
             }
           >
-            How It Works
+            AI
           </NavLink>
           <NavLink
             to="/contact"
@@ -104,7 +104,7 @@ export default function Header({ toggleDarkMode, isDarkMode }) {
         </nav>
 
         {/* Weather Search */}
-        <div className="flex items-center space-x-2 mt-4 md:mt-0">
+        <div className="flex items-center space-x-2 mt-2 md:mt-0">
           <input
             type="text"
             placeholder="Enter city"

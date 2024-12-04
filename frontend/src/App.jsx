@@ -3,8 +3,8 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import Home from "./components/Home";
-import Features from "./components/Features";
-import HowItWorks from "./components/HowItWorks";
+import ProductCatalog from "./components/ProductCatalog";
+import ChatApp from "./components/ChatAI";
 import Testimonials from "./components/Testimonials";
 import ContactForm from "./components/ContactForm";
 import AuthPage from "./components/AuthPage";
@@ -52,8 +52,8 @@ function App() {
         <main>
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/features" element={<Features />} />
-            <Route path="/how-it-works" element={<HowItWorks />} />
+            <Route path="/market" element={<ProductCatalog/>} />
+            <Route path="/AI" element={<ChatApp/>} />
             <Route path="/testimonials" element={<Testimonials />} />
             <Route path="/contact" element={<ContactForm />} />
             <Route

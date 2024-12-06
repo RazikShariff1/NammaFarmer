@@ -9,6 +9,7 @@ import Testimonials from "./components/Testimonials";
 import ContactForm from "./components/ContactForm";
 import AuthPage from "./components/AuthPage";
 import Dashboard from "./components/Dashboard";
+import ProductDetail from './components/ProductDetail';
 import "./App.css";
 import "./themes.css";
 
@@ -52,7 +53,8 @@ function App() {
         <main>
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/market" element={<ProductCatalog/>} />
+            <Route path="/listings" element={<ProductCatalog/>} />
+            <Route path="/product/:productId" element={<ProductDetail />} />
             <Route path="/AI" element={<ChatApp/>} />
             <Route path="/testimonials" element={<Testimonials />} />
             <Route path="/contact" element={<ContactForm />} />

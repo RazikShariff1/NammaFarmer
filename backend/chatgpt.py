@@ -1,19 +1,16 @@
-from flask import Flask, request, jsonify
-from flask_cors import CORS  # Import CORS library
+from flask import Blueprint, request, jsonify
 import requests
 import os
 
-app = Flask(__name__)
-
-# Enable CORS for all routes
-CORS(app)
+# Create a Blueprint for ChatGPT
+chatgpt_bp = Blueprint('chatgpt', __name__)
 
 # API credentials
 RAPIDAPI_KEY = os.getenv("GPT_KEY")
 RAPIDAPI_HOST = "chatgpt-vision1.p.rapidapi.com"
 API_URL = "https://chatgpt-vision1.p.rapidapi.com/gpt4"
 
-@app.route('/api/message', methods=['POST', 'OPTIONS'])
+@chatgpt_bp.route('/api/message', methods=['POST', 'OPTIONS'])
 def get_bot_response():
     # Handle preflight OPTIONS request for CORS
     if request.method == 'OPTIONS':
@@ -50,6 +47,3 @@ def get_bot_response():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
-if __name__ == "__main__":
-    app.run(debug=True)

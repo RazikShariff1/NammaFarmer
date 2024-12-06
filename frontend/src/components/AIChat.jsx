@@ -52,7 +52,7 @@ export default function AIChat() {
 
     try {
       // Send request to the backend
-      const response = await axios.post("http://127.0.0.1:5000/api/message", {
+      const response = await axios.post("http://127.0.0.1:5000/Farmergpt/api/message", {
         message: userMessage,
       });
 

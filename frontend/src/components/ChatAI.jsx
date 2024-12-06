@@ -58,7 +58,7 @@ export default function AIChat() {
     setIsTyping(true);
 
     try {
-      const response = await axios.post("http://127.0.0.1:5000/api/message", {
+      const response = await axios.post("http://127.0.0.1:5000/Farmergpt/api/message", {
         message: userMessage,
       });
 

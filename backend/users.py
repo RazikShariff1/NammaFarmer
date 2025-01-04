@@ -1,21 +1,15 @@
-# users.py
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, session
 import psycopg2
 from psycopg2.extras import RealDictCursor
+import os
 
 # Connection string for PostgreSQL
-CONNECTION_STRING = (
-    "user=postgres.myjpgltrdmjczavamwan "
-    "password=nammaFarmer_123 "
-    "host=aws-0-ap-southeast-1.pooler.supabase.com "
-    "port=6543 "
-    "dbname=postgres"
-)
+CONNECTION_STRING = os.getenv("DATABASE_URL")
 
 # Helper function to connect to the database
 def get_db_connection():
     try:
-        conn = psycopg2.connect(CONNECTION_STRING)
+        conn = psycopg2.connect(CONNECTION_STRING, cursor_factory=RealDictCursor)
         return conn
     except Exception as e:
         print(f"Database connection error: {e}")
@@ -30,7 +24,7 @@ def signup():
     data = request.get_json()
     name = data.get('name')
     email = data.get('email')
-    password = data.get('password')  # Ensure password is hashed in production!
+    password = data.get('password')  # In production, ensure password is hashed!
 
     if not name or not email or not password:
         return jsonify({'error': 'Missing fields'}), 400
@@ -41,16 +35,13 @@ def signup():
             return jsonify({'error': 'Database connection failed'}), 500
 
         with conn.cursor() as cur:
-            # Check if the user already exists
             cur.execute("SELECT * FROM users WHERE email = %s", (email,))
-            existing_user = cur.fetchone()
-            if existing_user:
+            if cur.fetchone():
                 return jsonify({'error': 'User already exists'}), 400
 
-            # Insert the new user
             cur.execute(
-                "INSERT INTO users (name, email, password) VALUES (%s, %s, %s)",
-                (name, email, password),
+                "INSERT INTO users (name, email, password) VALUES (%s, %s, %s) RETURNING id, name, email",
+                (name, email, password)
             )
             conn.commit()
 
@@ -79,13 +70,15 @@ def login():
         if not conn:
             return jsonify({'error': 'Database connection failed'}), 500
 
-        with conn.cursor(cursor_factory=RealDictCursor) as cur:
-            # Verify user credentials
-            cur.execute("SELECT * FROM users WHERE email = %s AND password = %s", (email, password))
+        with conn.cursor() as cur:
+            cur.execute("SELECT id, name, email FROM users WHERE email = %s AND password = %s", (email, password))
             user = cur.fetchone()
 
             if not user:
                 return jsonify({'error': 'Invalid credentials'}), 401
+
+            # Set user ID in session
+            session['user_id'] = user['id']
 
             return jsonify({'message': 'Login successful!', 'user': user}), 200
 
@@ -96,3 +89,9 @@ def login():
     finally:
         if conn:
             conn.close()
+
+# Route for user logout
+@users_bp.route('/logout', methods=['POST'])
+def logout():
+    session.pop('user_id', None)  # Remove user_id from session
+    return jsonify({'message': 'Logged out successfully!'}), 200

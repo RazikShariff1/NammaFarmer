@@ -6,9 +6,9 @@ import Settings from "./Settings";
 import Status from "./Status";
 import MarketInsight from "./MarketInsight";
 import SellProduce from "./SellProduce";
-import OrderTracking from "./OrderTracking";
+import Otracking from "./Otracking";
 import SupportResources from "./SupportResources";
-import NearbyMarkets from "./NearbyMarkets";
+import Chat from "./Chat";
 import Notifications from "./Notifications";
 import {
   FaUser,
@@ -21,10 +21,13 @@ import {
   FaHandshake,
   FaMapMarkerAlt,
   FaChartPie,
+  FaComments,
 } from "react-icons/fa";
 
 export default function Dashboard({ onLogout }) {
   const location = useLocation();
+  const chatRoomId = "room123"; // Replace with actual chat room ID
+  const userId = "user123";
 
   return (
     <div className="flex h-screen bg-gradient-to-br from-gray-100 to-gray-300 text-gray-900 font-sans">
@@ -44,12 +47,12 @@ export default function Dashboard({ onLogout }) {
               label="Profile"
               isActive={location.pathname === "/dashboard/profile"}
             />
-            <SidebarLink
+            {/* <SidebarLink
               to="/dashboard/analytics"
               icon={<FaChartBar />}
               label="Analytics"
               isActive={location.pathname === "/dashboard/analytics"}
-            />
+            /> */}
             <SidebarLink
               to="/dashboard/status"
               icon={<FaChartPie />}
@@ -81,10 +84,10 @@ export default function Dashboard({ onLogout }) {
               isActive={location.pathname === "/dashboard/support-resources"}
             />
             <SidebarLink
-              to="/dashboard/nearby-markets"
-              icon={<FaMapMarkerAlt />}
-              label="Nearby Buyers/Markets"
-              isActive={location.pathname === "/dashboard/nearby-markets"}
+              to="/dashboard/chats"
+              icon={<FaComments/>}
+              label="Chats"
+              isActive={location.pathname === "/dashboard/chats"}
             />
             <SidebarLink
               to="/dashboard/notifications"
@@ -122,14 +125,14 @@ export default function Dashboard({ onLogout }) {
         <div className="bg-white shadow-sm rounded-lg p-6 border border-gray-200 min-h-full">
           <Routes>
             <Route path="/profile" element={<Profile />} />
-            <Route path="/analytics" element={<Analytics />} />
+            {/* <Route path="/analytics" element={<Analytics />} /> */}
             <Route path="/settings" element={<Settings />} />
             <Route path="/status" element={<Status />} />
             <Route path="/market-insight" element={<MarketInsight />} />
             <Route path="/sell-produce" element={<SellProduce />} />
-            <Route path="/order-tracking" element={<OrderTracking />} />
+            <Route path="/order-tracking" element={<Otracking />} />
             <Route path="/support-resources" element={<SupportResources />} />
-            <Route path="/nearby-markets" element={<NearbyMarkets />} />
+            <Route path="/chats" element={<Chat chatRoomId={chatRoomId} userId={userId} />} />
             <Route path="/notifications" element={<Notifications />} />
             <Route
               path="*"

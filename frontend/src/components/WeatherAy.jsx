@@ -11,7 +11,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-export default function Analytics() {
+export default function WeatherAy() {
   const [weatherData, setWeatherData] = useState([]);
   const [city, setCity] = useState("London");
   const [loading, setLoading] = useState(false);

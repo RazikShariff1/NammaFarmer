@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, session
 import psycopg2
 from psycopg2.extras import RealDictCursor
 import os
@@ -6,98 +6,111 @@ import os
 # Blueprint for sell produce
 sellproduce_bp = Blueprint('sellproduce', __name__)
 
-# Supabase connection string
+# Connection string for PostgreSQL
 CONNECTION_STRING = os.getenv("DATABASE_URL")
 
-# Connect to Supabase PostgreSQL database
+# Connect to the database
 def get_db_connection():
-    conn = psycopg2.connect(CONNECTION_STRING, cursor_factory=RealDictCursor)
-    return conn
+    try:
+        conn = psycopg2.connect(CONNECTION_STRING, cursor_factory=RealDictCursor)
+        return conn
+    except Exception as e:
+        print(f"Database connection error: {e}")
+        return None
 
-# Get all listings
-@sellproduce_bp.route('/listings', methods=['GET'])
-def get_listings():
+# Get all products for the logged-in seller
+@sellproduce_bp.route('/products', methods=['GET'])
+def get_products():
+    seller_id = 1 #session.get('user_id')
+    if not seller_id:
+        return jsonify({"error": "Unauthorized"}), 401
+
     try:
         conn = get_db_connection()
-        cur = conn.cursor()
-        cur.execute("SELECT * FROM listings;")
-        listings = cur.fetchall()
-        cur.close()
+        with conn.cursor() as cur:
+            cur.execute("SELECT * FROM products WHERE seller_id = %s", (seller_id,))
+            products = cur.fetchall()
         conn.close()
-        return jsonify(listings), 200
+        return jsonify(products), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# Add a new listing
-@sellproduce_bp.route('/listings', methods=['POST'])
-def add_listing():
-    data = request.json
-    try:
-        # Validate and set default values for optional fields
-        sales = data.get('sales', 0)  # Default to 0 if not provided
-        profit = data.get('profit', 0)  # Default to 0 if not provided
-        image = data.get('image', None)  # Default to None if not provided
+# Add a new product for the logged-in seller
+@sellproduce_bp.route('/products', methods=['POST'])
+def add_product():
+    seller_id = 2#session.get('user_id')
+    if not seller_id:
+        return jsonify({"error": "Unauthorized"}), 401
 
-        conn = get_db_connection()
-        cur = conn.cursor()
-        cur.execute(
-            """
-            INSERT INTO listings (name, category, price, quantity, sales, profit, description, status, image)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING *;
-            """,
-            (data['name'], data['category'], float(data['price']), int(data['quantity']),
-             int(sales), float(profit), data['description'], data['status'], image)
-        )
-        new_listing = cur.fetchone()
-        conn.commit()
-        cur.close()
-        conn.close()
-        return jsonify(new_listing), 201
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-# Update a listing
-@sellproduce_bp.route('/listings/<int:id>', methods=['PUT'])
-def update_listing(id):
     data = request.json
     try:
         conn = get_db_connection()
-        cur = conn.cursor()
-        cur.execute(
-            """
-            UPDATE listings
-            SET name=%s, category=%s, price=%s, quantity=%s, sales=%s,
-                profit=%s, description=%s, status=%s, image=%s
-            WHERE id=%s RETURNING *;
-            """,
-            (data['name'], data['category'], data['price'], data['quantity'],
-             data['sales'], data['profit'], data['description'], data['status'], data['image'], id)
-        )
-        updated_listing = cur.fetchone()
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                INSERT INTO products (name, category, price, quantity, sales, profit, description, status, image, seller_id)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING *;
+                """,
+                (data['name'], data['category'], float(data['price']), int(data['quantity']),
+                 data.get('sales', 0), data.get('profit', 0), data['description'], 
+                 data['status'], data.get('image', None), seller_id)
+            )
+            new_product = cur.fetchone()
         conn.commit()
-        cur.close()
         conn.close()
-        if updated_listing:
-            return jsonify(updated_listing), 200
-        else:
-            return jsonify({"error": "Listing not found"}), 404
+        return jsonify(new_product), 201
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# Delete a listing
-@sellproduce_bp.route('/listings/<int:id>', methods=['DELETE'])
-def delete_listing(id):
+# Update a product
+@sellproduce_bp.route('/products/<int:id>', methods=['PUT'])
+def update_product(id):
+    seller_id =1# session.get('user_id')
+    if not seller_id:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    data = request.json
     try:
         conn = get_db_connection()
-        cur = conn.cursor()
-        cur.execute("DELETE FROM listings WHERE id=%s RETURNING *;", (id,))
-        deleted_listing = cur.fetchone()
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                UPDATE products
+                SET name=%s, category=%s, price=%s, quantity=%s, sales=%s,
+                    profit=%s, description=%s, status=%s, image=%s
+                WHERE id=%s AND seller_id=%s RETURNING *;
+                """,
+                (data['name'], data['category'], float(data['price']), int(data['quantity']),
+                 data['sales'], data['profit'], data['description'], data['status'], 
+                 data.get('image', None), id, seller_id)
+            )
+            updated_product = cur.fetchone()
         conn.commit()
-        cur.close()
         conn.close()
-        if deleted_listing:
-            return jsonify(deleted_listing), 200
+        if updated_product:
+            return jsonify(updated_product), 200
         else:
-            return jsonify({"error": "Listing not found"}), 404
+            return jsonify({"error": "Product not found or unauthorized"}), 404
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# Delete a product
+@sellproduce_bp.route('/products/<int:id>', methods=['DELETE'])
+def delete_product(id):
+    seller_id =1# session.get('user_id')
+    if not seller_id:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    try:
+        conn = get_db_connection()
+        with conn.cursor() as cur:
+            cur.execute("DELETE FROM products WHERE id=%s AND seller_id=%s RETURNING *;", (id, seller_id))
+            deleted_product = cur.fetchone()
+        conn.commit()
+        conn.close()
+        if deleted_product:
+            return jsonify(deleted_product), 200
+        else:
+            return jsonify({"error": "Product not found or unauthorized"}), 404
     except Exception as e:
         return jsonify({"error": str(e)}), 500

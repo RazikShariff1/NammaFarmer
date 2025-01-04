@@ -1,11 +1,12 @@
-from flask import Blueprint, jsonify
+from flask import Flask, Blueprint, jsonify
 import psycopg2
 import os
 
-# Create a Blueprint for listings
-listings_bp = Blueprint('listings', __name__)
+# Create Flask app and Blueprint
+app = Flask(__name__)
+products_bp = Blueprint('listings', __name__)
 
-# Database connection string
+# Database connection string (set this in your environment)
 CONNECTION_STRING = os.getenv("DATABASE_URL")
 
 # Function to connect to the database
@@ -17,30 +18,26 @@ def get_db_connection():
         print(f"Error connecting to database: {e}")
         return None
 
-# Route to fetch listings
-@listings_bp.route('/api/listings', methods=['GET'])
-def get_listings():
+# Route to fetch all products
+@products_bp.route('/api/products', methods=['GET'])
+def get_all_products():
     conn = get_db_connection()
     if conn is None:
         return jsonify({"error": "Failed to connect to database"}), 500
 
     try:
-        # Query to join listings and product tables
+        # Query to fetch all products
         query = """
         SELECT 
-            l.id AS listing_id,
-            p.product_id,
-            p.name,
-            p.category,
-            l.price AS listing_price,
-            l.quantity AS available_quantity,
-            p.image,
-            p.description,
-            4.5 AS rating, -- Assume rating is static for now
-            l.status
-        FROM listings l
-        JOIN product p ON l.product_id = p.product_id
-        WHERE l.status = 'active'; -- Fetch only active listings
+            id, 
+            name, 
+            category, 
+            price, 
+            quantity, 
+            description, 
+            status, 
+            image 
+        FROM products;
         """
         cursor = conn.cursor()
         cursor.execute(query)
@@ -48,51 +45,47 @@ def get_listings():
         conn.close()
 
         # Convert rows to a list of dictionaries
-        listings = [
+        products = [
             {
-                "listing_id": row[0],
-                "product_id": row[1],
-                "name": row[2],
-                "category": row[3],
-                "price": float(row[4]),
-                "quantity": row[5],
-                "image": row[6],
-                "description": row[7],
-                "rating": row[8],
-                "status": row[9],
+                "id": row[0],
+                "name": row[1],
+                "category": row[2],
+                "price": float(row[3]),  # Ensure the price is converted to float
+                "quantity": row[4],
+                "description": row[5],
+                "status": row[6],
+                "image": row[7],
             }
             for row in rows
         ]
-        return jsonify(listings), 200
+
+        return jsonify(products), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     finally:
         conn.close()
 
-# Route to fetch a single product's details by product_id
-@listings_bp.route('/api/product/<int:product_id>', methods=['GET'])
+# Route to fetch a single product by ID
+@products_bp.route('/api/product/<int:product_id>', methods=['GET'])
 def get_product_by_id(product_id):
     conn = get_db_connection()
     if conn is None:
         return jsonify({"error": "Failed to connect to database"}), 500
 
     try:
-        # Query to join listings and product tables
+        # Query to fetch a single product by ID
         query = """
         SELECT 
-            l.id AS listing_id,
-            p.product_id,
-            p.name,
-            p.category,
-            l.price AS listing_price,
-            l.quantity AS available_quantity,
-            p.image,
-            p.description,
-            4.5 AS rating, -- Assume rating is static for now
-            l.status
-        FROM listings l
-        JOIN product p ON l.product_id = p.product_id
-        WHERE l.product_id = %s AND l.status = 'active';  -- Fetch only active listings
+            id, 
+            name, 
+            category, 
+            price, 
+            quantity, 
+            description, 
+            status, 
+            image 
+        FROM products
+        WHERE id = %s;
         """
         cursor = conn.cursor()
         cursor.execute(query, (product_id,))
@@ -100,19 +93,17 @@ def get_product_by_id(product_id):
         conn.close()
 
         if row is None:
-            return jsonify({"error": "Product not found in listings"}), 404
+            return jsonify({"error": "Product not found"}), 404
 
         product = {
-            "listing_id": row[0],
-            "product_id": row[1],
-            "name": row[2],
-            "category": row[3],
-            "price": float(row[4]),
-            "quantity": row[5],
-            "image": row[6],
-            "description": row[7],
-            "rating": row[8],
-            "status": row[9],
+            "id": row[0],
+            "name": row[1],
+            "category": row[2],
+            "price": float(row[3]),  # Ensure the price is converted to float
+            "quantity": row[4],
+            "description": row[5],
+            "status": row[6],
+            "image": row[7],
         }
 
         return jsonify(product), 200
@@ -120,3 +111,4 @@ def get_product_by_id(product_id):
         return jsonify({"error": str(e)}), 500
     finally:
         conn.close()
+

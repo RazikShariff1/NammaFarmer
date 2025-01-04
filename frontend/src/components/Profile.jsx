@@ -1,167 +1,152 @@
-import React from "react";
-import { FaEdit, FaMapMarkerAlt } from "react-icons/fa";
+import React, { useState, useEffect } from "react";
+import { FaEdit, FaMapMarkerAlt, FaArrowUp, FaArrowDown, FaRupeeSign } from "react-icons/fa";
+import axios from "axios";
 import { Line } from "react-chartjs-2";
-import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from "chart.js";
-
-// Register ChartJS components
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
 export default function Profile() {
+  const [profile, setProfile] = useState(null);
+  const [productInsights, setProductInsights] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const username = "Razik"; // Replace with dynamic username if needed
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const profileResponse = await axios.get(`http://127.0.0.1:5000/profile/${username}`);
+        const productResponse = await axios.get(`http://127.0.0.1:5000/profile/${username}/product-insights`);
+
+        setProfile(profileResponse.data);
+        setProductInsights(productResponse.data);
+      } catch (error) {
+        console.error("Error fetching profile or product insights:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [username]);
+
+  if (loading) {
+    return <div className="text-center py-10">Loading...</div>;
+  }
+
   return (
-    <div className="max-w-screen-xl mx-auto p-8 space-y-8 bg-gray-50">
+    <div className="max-w-screen-xl mx-auto p-6 space-y-6 bg-gray-50" style={{ width: "73vw" }}>
       {/* Profile Overview Section */}
-      <div className="bg-gradient-to-br from-teal-600 to-green-800 text-white rounded-xl p-6 flex flex-col lg:flex-row items-center shadow-2xl gap-6">
+      <div className="bg-gradient-to-r from-teal-500 to-green-700 text-white rounded-lg p-3 shadow-md flex items-center gap-4">
         {/* Profile Picture */}
-        <div className="relative">
+        <div className="relative flex-shrink-0">
           <img
-            src="https://via.placeholder.com/150"
+            src="https://via.placeholder.com/80"
             alt="Profile"
-            className="w-32 h-32 rounded-full border-4 border-white shadow-lg"
+            className="w-16 h-16 rounded-full border-4 border-white shadow-md"
           />
-          <button className="absolute bottom-2 right-2 bg-white text-teal-600 rounded-full p-2 shadow-md hover:bg-gray-100 transition">
-            <FaEdit />
+          <button className="absolute bottom-0 right-0 bg-white text-teal-600 rounded-full p-1 shadow hover:bg-gray-100 transition">
+            <FaEdit size={14} />
           </button>
         </div>
 
         {/* Personal Details */}
-        <div className="flex-1 text-center lg:text-left">
-          <h1 className="text-3xl font-bold">Razik Shariff</h1>
-          <p className="text-base text-teal-200 mt-1">Shariff@example.com</p>
-          <p className="flex items-center justify-center lg:justify-start gap-2 text-sm mt-3">
+        <div className="flex-1 text-sm">
+          <h1 className="text-xl font-semibold">{profile.name}</h1>
+          <p className="text-xs text-teal-200">{profile.email}</p>
+          <p className="flex items-center gap-1 text-xs mt-1">
             <FaMapMarkerAlt />
-            <span>Bangalore, India</span>
+            <span>{profile.location_name || "Location not set"}</span>
           </p>
-          <p className="text-sm mt-1">
-            <span className="font-medium">Member Since:</span> March 2022
+          <p className="text-xs text-gray-200 mt-1">
+            <span className="font-medium">Member Since:</span> {profile.member_since || "N/A"}
           </p>
         </div>
       </div>
 
-      {/* Insights Section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {/* Textual Insights */}
-        <InsightCard
-          title="Monthly Revenue"
-          value="$4,200"
-          description="Earnings this month"
-          color="teal"
-        />
-        <InsightCard
-          title="Top Product"
-          value="Organic Apples"
-          description="150 units sold"
-          color="blue"
-        />
-        
-        {/* Graphical Insights */}
-        <InsightCard
-          title="Customer Satisfaction"
-          value="94%"
-          description="Positive Feedback"
-          progress={94}
-          color="purple"
-        />
-        <InsightCard
-          title="Active Orders"
-          value="12"
-          description="Currently in progress"
-          color="yellow"
-          chartData={{
-            labels: ["Week 1", "Week 2", "Week 3", "Week 4"],
-            datasets: [
-              {
-                label: "Orders",
-                data: [8, 9, 12, 10],
-                fill: true,
-                backgroundColor: "#51A99C",
-                borderColor: "#C8F69C",
-                borderWidth: 2,
-              },
-            ],
-          }}
-        />
-        
-        {/* Progress Insights */}
-        <InsightCard
-          title="Lifetime Revenue"
-          value="$36,000"
-          description="Total earnings"
-          progress={80}
-          color="teal"
-        />
-        <InsightCard
-          title="Unread Messages"
-          value="5"
-          description="New inquiries"
-          color="red"
-          progress={50}
-        />
-      </div>
+      {/* Product Insights Section */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {productInsights.length > 0 ? (
+          productInsights.map((product) => {
+            // Logic for determining profit or loss
+            const profit = product.total_profit;
+            const loss = product.loss;
 
-      {/* Recent Activity Section */}
-      <div className="bg-white rounded-xl shadow-lg p-6">
-        <h2 className="text-2xl font-bold mb-4 text-gray-800">Recent Activity</h2>
-        <ul className="space-y-4">
-          <RecentActivityItem
-            activity="Order #1234 delivered"
-            timestamp="2 days ago"
-          />
-          <RecentActivityItem
-            activity="New message from Buyer A"
-            timestamp="4 days ago"
-          />
-          <RecentActivityItem
-            activity="Added 'Organic Mangoes' to inventory"
-            timestamp="1 week ago"
-          />
-          <RecentActivityItem
-            activity="Order #1227 delayed due to weather"
-            timestamp="10 days ago"
-          />
-        </ul>
-      </div>
-    </div>
-  );
-}
+            return (
+              <div
+                key={product.product_name}
+                className="bg-white rounded-lg shadow-sm p-3 border border-gray-200 transform transition-all duration-200 hover:scale-105 hover:shadow-lg"
+              >
+                <div className="mb-3">
+                  <h3 className="text-sm font-semibold text-teal-600">{product.product_name}</h3>
+                  <p className="text-xs text-gray-600 mt-1">{product.category}</p>
+                </div>
 
-function InsightCard({ title, value, description, progress, color, chartData }) {
-  const progressBarColor = `bg-${color}-500`;
-  const textColor = `text-${color}-600`;
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <p className="text-xs text-gray-700">Price</p>
+                    <h4 className="text-sm font-bold text-teal-600">₹{product.price}</h4>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <p className="text-xs text-gray-700">Quantity</p>
+                    <h4 className="text-sm font-bold text-gray-600">{product.quantity}</h4>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <p className="text-xs text-gray-700">Sales</p>
+                    <h4 className="text-sm font-bold text-teal-600">{product.sales}</h4>
+                  </div>
+                </div>
 
-  return (
-    <div className="bg-white rounded-xl shadow-md p-5 border border-gray-200">
-      <h3 className={`text-base font-semibold ${textColor}`}>{title}</h3>
-      <p className="text-sm text-gray-600 mt-1">{description}</p>
-      <h4 className={`text-3xl font-bold mt-3 ${textColor}`}>{value}</h4>
+                {/* Profit/Loss Section */}
+                <div
+                  className={`mt-3 px-2 py-1 rounded-lg flex items-center justify-between ${
+                    profit > 0
+                      ? "bg-green-100 text-green-600"
+                      : loss > 0
+                      ? "bg-red-100 text-red-600"
+                      : "bg-gray-100 text-gray-600"
+                  }`}
+                >
+                  <div className="flex items-center gap-1">
+                    {profit > 0 ? (
+                      <FaArrowUp size={16} />
+                    ) : loss > 0 ? (
+                      <FaArrowDown size={16} />
+                    ) : (
+                      <span>No Profit/Loss</span>
+                    )}
+                    <span className="font-medium text-xs">
+                      {profit > 0
+                        ? `Profit: ₹${profit}`
+                        : loss > 0
+                        ? `Loss: ₹${loss}`
+                        : "No Profit/Loss"}
+                    </span>
+                  </div>
+                  <FaRupeeSign size={18} />
+                </div>
 
-      {/* If there's a progress bar */}
-      {progress && (
-        <div className="mt-3">
-          <div className="h-2 bg-gray-200 rounded-full">
-            <div
-              className={`h-full ${progressBarColor} rounded-full`}
-              style={{ width: `${progress}%` }}
-            ></div>
+                {/* Chart Section for Graphical Insights */}
+                {product.chartData && (
+                  <div className="mt-3 h-24">
+                    <Line
+                      data={product.chartData}
+                      options={{
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                          legend: { display: false },
+                        },
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
+            );
+          })
+        ) : (
+          <div className="text-gray-500 text-center col-span-full">
+            No product insights available.
           </div>
-          <p className="text-xs text-gray-500 mt-1">{progress}% completed</p>
-        </div>
-      )}
-
-      {/* Chart Section for Graphical Insights */}
-      {chartData && (
-        <div className="mt-4 h-36">
-          <Line data={chartData} options={{ responsive: true, maintainAspectRatio: false }} />
-        </div>
-      )}
+        )}
+      </div>
     </div>
-  );
-}
-
-function RecentActivityItem({ activity, timestamp }) {
-  return (
-    <li className="flex justify-between items-center">
-      <p className="text-gray-800 text-sm font-medium">{activity}</p>
-      <span className="text-gray-500 text-xs">{timestamp}</span>
-    </li>
   );
 }

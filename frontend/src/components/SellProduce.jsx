@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { FaEdit, FaTrashAlt, FaSave, FaUpload } from "react-icons/fa";
+import { FaEdit, FaTrashAlt, FaUpload } from "react-icons/fa";
+import { FiCheckCircle, FiAlertCircle } from "react-icons/fi";
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from "chart.js";
 import { Bar } from "react-chartjs-2";
 
@@ -21,6 +22,9 @@ export default function SellProduce() {
     image: "",
   });
   const [imagePreview, setImagePreview] = useState(null);
+  const [showAlert, setShowAlert] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
+  const [alertType, setAlertType] = useState("success"); // 'success' or 'error'
 
   // Fetch listings on load
   useEffect(() => {
@@ -29,7 +33,7 @@ export default function SellProduce() {
 
   const fetchListings = async () => {
     try {
-      const response = await axios.get(`${API_URL}/listings`);
+      const response = await axios.get(`${API_URL}/products`);
       setListings(response.data);
     } catch (error) {
       console.error("Error fetching listings:", error);
@@ -45,12 +49,12 @@ export default function SellProduce() {
         quantity: parseInt(formData.quantity, 10),
         image: imagePreview,
       };
-      const response = await axios.post(`${API_URL}/listings`, newListing);
+      const response = await axios.post(`${API_URL}/products`, newListing);
       setListings([...listings, response.data]);
-      setFormData({ name: "", category: "", price: "", quantity: "", description: "", status: "Available", image: "" });
-      setImagePreview(null);
+      handleResponse("Product added successfully!");
+      resetForm();
     } catch (error) {
-      console.error("Error adding listing:", error);
+      handleError("Error adding listing!");
     }
   };
 
@@ -60,27 +64,30 @@ export default function SellProduce() {
     setImagePreview(item.image);
   };
 
-  const handleSave = async (id) => {
+  const handleSave = async () => {
     try {
       const updatedListing = {
         ...formData,
         image: imagePreview,
       };
-      await axios.put(`${API_URL}/listings/${id}`, updatedListing);
-      setListings((prev) => prev.map((item) => (item.id === id ? { ...item, ...updatedListing } : item)));
-      setEditingId(null);
-      setImagePreview(null);
+      await axios.put(`${API_URL}/products/${editingId}`, updatedListing);
+      setListings((prev) =>
+        prev.map((item) => (item.id === editingId ? { ...item, ...updatedListing } : item))
+      );
+      handleResponse("Product updated successfully!");
+      resetForm();
     } catch (error) {
-      console.error("Error updating listing:", error);
+      handleError("Error updating listing!");
     }
   };
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`${API_URL}/listings/${id}`);
+      await axios.delete(`${API_URL}/products/${id}`);
       setListings((prev) => prev.filter((item) => item.id !== id));
+      handleResponse("Product deleted successfully!");
     } catch (error) {
-      console.error("Error deleting listing:", error);
+      handleError("Error deleting listing!");
     }
   };
 
@@ -96,6 +103,34 @@ export default function SellProduce() {
       reader.onloadend = () => setImagePreview(reader.result);
       reader.readAsDataURL(file);
     }
+  };
+
+  const resetForm = () => {
+    setEditingId(null);
+    setFormData({
+      name: "",
+      category: "",
+      price: "",
+      quantity: "",
+      description: "",
+      status: "Available",
+      image: "",
+    });
+    setImagePreview(null);
+  };
+
+  const handleResponse = (message) => {
+    setAlertMessage(message);
+    setAlertType("success");
+    setShowAlert(true);
+    setTimeout(() => setShowAlert(false), 3000); // Hide alert after 3 seconds
+  };
+
+  const handleError = (message) => {
+    setAlertMessage(message);
+    setAlertType("error");
+    setShowAlert(true);
+    setTimeout(() => setShowAlert(false), 3000); // Hide alert after 3 seconds
   };
 
   const chartData = {
@@ -119,15 +154,54 @@ export default function SellProduce() {
     plugins: {
       legend: { position: "top" },
       title: { display: true, text: "Sales and Profit Chart" },
+      tooltip: {
+        callbacks: {
+          label: function (tooltipItem) {
+            return `₹${tooltipItem.raw}`;
+          },
+        },
+      },
     },
   };
+  
 
   return (
     <div className="max-w-screen-xl mx-auto p-8 space-y-8 bg-gray-50" style={{ width: "73vw" }}>
+      {/* Alert */}
+      {showAlert && (
+  <div
+    className={`absolute left-1/2 transform -translate-x-1/2 px-4 py-2 rounded-lg flex items-center space-x-3 shadow-xl transition-all duration-300 ${
+      alertType === "success" ? "bg-green-600" : "bg-red-600"
+    }`}
+    style={{
+      top: "10%", // Adjusted top to make sure it’s visible
+      zIndex: 9999, // Keeps alert above all content
+      width: "80%", // Ensure it’s wide enough on smaller screens
+      maxWidth: "300px", // Reduced max width for better fit
+      animation: "fadeIn 0.5s", // Smooth entry animation
+    }}
+  >
+    <div
+      className={`rounded-full p-2 ${
+        alertType === "success" ? "bg-green-500" : "bg-red-500"
+      }`}
+    >
+      {alertType === "success" ? (
+        <FiCheckCircle size={20} className="text-white" />
+      ) : (
+        <FiAlertCircle size={20} className="text-white" />
+      )}
+    </div>
+    <span className="text-white font-medium text-sm">{alertMessage}</span>
+  </div>
+)}
+
       {/* Product Upload Section */}
       <div className="bg-white rounded-xl shadow-lg p-6">
         <h2 className="text-2xl font-bold text-gray-800 mb-4">List Your Produce</h2>
-        <form className="space-y-4" onSubmit={handleAdd}>
+        <form className="space-y-4" onSubmit={editingId ? handleSave : handleAdd}>
+          {/* Form Fields */}
+
           {/* Product Name */}
           <div>
             <label htmlFor="name" className="text-sm font-medium text-gray-700">
@@ -272,13 +346,11 @@ export default function SellProduce() {
             type="submit"
             className="w-full py-2 px-4 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition"
           >
-            List Product
+            {editingId ? "Save Changes" : "List Product"}
           </button>
         </form>
-
       </div>
 
-      {/* Active Listings Section */}
       {/* Active Listings Section */}
       <div className="bg-white rounded-xl shadow-lg p-6">
         <h2 className="text-2xl font-bold text-gray-800 mb-4">Active Listings</h2>
@@ -294,46 +366,38 @@ export default function SellProduce() {
                 />
                 <div>
                   <h3 className="font-semibold text-lg text-gray-800">{item.name}</h3>
-                  <p className="text-sm text-gray-600">{item.description}</p>
-                  <p className="text-xs text-gray-500">{item.category} | {item.status}</p>
+                  <p className="text-gray-600 text-sm">{item.description}</p>
+                  <p className="text-gray-800 font-medium">{item.category}</p>
+                  <p className="text-teal-600 font-bold">{`₹${item.price} per unit`}</p>
                 </div>
               </div>
 
-              {/* Action Buttons Section */}
-              <div className="space-x-4">
-                {editingId === item.id ? (
-                  <button
-                    onClick={() => handleSave(item.id)}
-                    className="text-teal-500 hover:text-teal-700"
-                  >
-                    <FaSave />
-                  </button>
-                ) : (
-                  <>
-                    <button
-                      onClick={() => handleEdit(item)}
-                      className="text-blue-500 hover:text-blue-700"
-                    >
-                      <FaEdit />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(item.id)}
-                      className="text-red-500 hover:text-red-700"
-                    >
-                      <FaTrashAlt />
-                    </button>
-                  </>
-                )}
+              {/* Actions Section */}
+              <div className="flex items-center space-x-3">
+                <button
+                  className="p-2 text-teal-500 hover:bg-teal-50 rounded"
+                  onClick={() => handleEdit(item)}
+                >
+                  <FaEdit />
+                </button>
+                <button
+                  className="p-2 text-red-500 hover:bg-red-50 rounded"
+                  onClick={() => handleDelete(item.id)}
+                >
+                  <FaTrashAlt />
+                </button>
               </div>
             </div>
           ))}
         </div>
       </div>
 
-
-      {/* Chart Section */}
-      <div>
-        <Bar data={chartData} options={chartOptions} />
+      {/* Bar Chart Section */}
+      <div className="bg-white rounded-xl shadow-lg p-6">
+        <h2 className="text-2xl font-bold text-gray-800 mb-4">Sales and Profit Chart</h2>
+        <div className="w-full">
+          <Bar data={chartData} options={chartOptions} />
+        </div>
       </div>
     </div>
   );

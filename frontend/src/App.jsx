@@ -53,11 +53,12 @@ function App() {
         <main>
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/listings" element={<ProductCatalog/>} />
-            <Route path="/product/:productId" element={<ProductDetail />} />
+            <Route path="/Market" element={<ProductCatalog/>} />
+            <Route path="/product/:product_id" element={<ProductDetail />} />
             <Route path="/AI" element={<ChatApp/>} />
             <Route path="/testimonials" element={<Testimonials />} />
             <Route path="/contact" element={<ContactForm />} />
+            
             <Route
               path="/account"
               element={

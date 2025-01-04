@@ -22,10 +22,13 @@
     "react-leaflet": "^4.2.1",
     "react-markdown": "^9.0.1",
     "react-router-dom": "^6.28.0",
+    "react-slick": "^0.30.2",
     "react-toastify": "^10.0.6",
     "react-tooltip": "^5.28.0",
     "recharts": "^2.13.3",
-    "remark-gfm": "^4.0.0"
+    "remark-gfm": "^4.0.0",
+    "slick-carousel": "^1.8.1",
+    "socket.io-client": "^4.8.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.13.0",

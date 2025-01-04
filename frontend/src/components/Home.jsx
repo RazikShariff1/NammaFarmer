@@ -12,33 +12,17 @@ import {
 } from "recharts";
 import { cropsData } from "./cropsData"; // Assuming cropsData contains monthly crop price data
 import AIChat from "./AIChat";
-import nf1 from '../assets/nf1.jpg'
-
-
-const carouselImages = [
-  nf1, // Local image imported above
-  'https://th.bing.com/th/id/OIP.DqamVa0TeS9btFBmpy5laQHaDt?w=350&h=175&c=7&r=0&o=5&dpr=1.5&pid=1.7', // External URL
-  'https://source.unsplash.com/1280x400/?agriculture', // External URL
-];
 
 export default function Home() {
   const [selectedCrop, setSelectedCrop] = useState("Wheat"); // Default crop
   const [graphData, setGraphData] = useState(cropsData[selectedCrop]); // Default crop data
   const [chatMessages, setChatMessages] = useState([]); // Chat messages state
-  const [carouselIndex, setCarouselIndex] = useState(0);
   const [chatInput, setChatInput] = useState(""); // Input for AI chat
 
   // Timer for updating the time every second
   useEffect(() => {
     const timer = setInterval(() => setTime(new Date()), 1000);
     return () => clearInterval(timer);
-  }, []);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCarouselIndex((prevIndex) => (prevIndex + 1) % carouselImages.length);
-    }, 3000); // Auto-slide every 3 seconds
-    return () => clearInterval(interval);
   }, []);
 
   const handleChatSubmit = async (e) => {
@@ -192,51 +176,7 @@ export default function Home() {
       <AIChat/>
 
       {/* Other Sections */}
-      <div className="relative w-[35%] max-w-4xl mx-auto bg-gray-100 mt-4 rounded-[20px] shadow-lg overflow-hidden">
-        <img
-          src={carouselImages[carouselIndex]}
-          alt={`Slide ${carouselIndex}`}
-          className="w-full h-56 object-contain transition-transform duration-700 ease-in-out bg-white"
-        />
-
-        {/* Navigation Arrows */}
-        <button
-          onClick={() =>
-            setCarouselIndex(
-              (carouselIndex - 1 + carouselImages.length) % carouselImages.length
-            )
-          }
-          className="absolute top-1/2 left-4 transform -translate-y-1/2 bg-black/50 text-white p-2 rounded-full shadow-lg hover:bg-black/70"
-          aria-label="Previous"
-        >
-          &lt;
-        </button>
-        <button
-          onClick={() =>
-            setCarouselIndex((carouselIndex + 1) % carouselImages.length)
-          }
-          className="absolute top-1/2 right-4 transform -translate-y-1/2 bg-black/50 text-white p-2 rounded-full shadow-lg hover:bg-black/70"
-          aria-label="Next"
-        >
-          &gt;
-        </button>
-
-        {/* Dots Navigation */}
-        <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2 flex space-x-2">
-          {carouselImages.map((_, index) => (
-            <button
-              key={index}
-              className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
-                index === carouselIndex
-                  ? 'bg-blue-500 scale-110'
-                  : 'bg-gray-400 hover:bg-blue-300'
-              }`}
-              onClick={() => setCarouselIndex(index)}
-              aria-label={`Go to slide ${index + 1}`}
-            />
-          ))}
-        </div>
-      </div>
+      
       {/* Testimoniaals, Call to Action, Footer */}
 
     </div>
